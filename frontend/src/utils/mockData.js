@@ -1,0 +1,32 @@
+export const mockRows = [
+  {
+    id: "aff_001",
+    name: "Affiliate Alpha",
+    clicks: 1240,
+    registrations: 230,
+    ftds: 58,
+    deposits: 182340.5,
+    net_pnl: 45230.75,
+    commission: 6784.61,
+  },
+  {
+    id: "aff_002",
+    name: "Affiliate Beta",
+    clicks: 980,
+    registrations: 180,
+    ftds: 42,
+    deposits: 132000,
+    net_pnl: -8200,
+    commission: 2100,
+  },
+  {
+    id: "aff_003",
+    name: "Affiliate Gamma",
+    clicks: 1540,
+    registrations: 310,
+    ftds: 76,
+    deposits: 248900,
+    net_pnl: 60200,
+    commission: 12040,
+  },
+];
