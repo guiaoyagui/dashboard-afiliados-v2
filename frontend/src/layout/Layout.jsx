@@ -1,14 +1,13 @@
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import { Outlet } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 
-export default function Layout() {
+export default function Layout({ children, activeTab, onTabChange }) {
   const { open, close } = useSidebar();
 
   return (
     <div className="min-h-screen w-full flex bg-[#121212] text-white overflow-x-hidden">
-      {/* Overlay mobile */}
+      {/* Overlay Mobile */}
       {open && (
         <div
           onClick={close}
@@ -16,22 +15,24 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Lateral */}
       <div
         className={`
-          fixed md:static z-50 h-full
+          fixed md:static z-50 min-h-screen bg-[#1a1a1a] border-r border-[#2a2a2a]
           transform transition-transform duration-300
           ${open ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
-        <Sidebar />
+        <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
       </div>
 
-      {/* Conteúdo */}
-      <main className="flex-1 p-6 md:p-10">
+      {/* Conteúdo Principal */}
+      <main className="flex-1 p-6 md:p-10 w-full max-w-[100vw]">
         <Header />
-        <Outlet />
+        <div className="mt-6">
+          {children}
+        </div>
       </main>
     </div>
   );

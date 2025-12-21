@@ -1,35 +1,28 @@
 import KpiCard from "./KpiCard";
+import { formatCurrency, formatNumber } from "../utils/format";
 
 export default function KpiGrid({ kpis }) {
-  if (!kpis) return null;
+  if (!kpis || kpis.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <KpiCard
-        title="Net P&L"
-        value={`R$ ${kpis.netPnl.toFixed(2)}`}
-        color={kpis.netPnl >= 0 ? "text-green-400" : "text-red-400"}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {kpis.map((kpi, index) => {
+        const safeValue = kpi.value ?? 0;
+        
+        const displayValue = kpi.type === "currency" 
+          ? formatCurrency(safeValue) 
+          : formatNumber(safeValue);
 
-      <KpiCard
-        title="Comissões"
-        value={`R$ ${kpis.commissions.toFixed(2)}`}
-      />
-
-      <KpiCard
-        title="FTDs"
-        value={kpis.ftds}
-        color="text-blue-400"
-      />
-
-      <KpiCard
-        title="ROI"
-        value={
-          kpis.commissions > 0
-            ? `${((kpis.netPnl / kpis.commissions) * 100).toFixed(0)}%`
-            : "0%"
-        }
-      />
+        return (
+          <KpiCard 
+            key={index}
+            label={kpi.label} 
+            value={displayValue}
+            icon={kpi.icon}
+            color={kpi.color}
+          />
+        );
+      })}
     </div>
   );
 }

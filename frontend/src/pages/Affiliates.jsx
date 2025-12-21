@@ -1,89 +1,65 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
+import AffiliateFilters from "../components/AffiliateFilters";
+import AffiliateTable from "../components/AffiliateTable"; // Certifique-se que o import está correto
 
-export default function Affiliates() {
-  const [affiliates, setAffiliates] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Affiliates({ rows = [], onSelectAffiliate }) {
+  const [filteredRows, setFilteredRows] = useState(rows);
 
-  useEffect(() => {
-    fetch("http://localhost:3333/api/affiliates")
-      .then(res => res.json())
-      .then(data => {
-        setAffiliates(data.affiliates || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
+  // Garante que a lista atualiza se os dados mudarem
+  useMemo(() => {
+    setFilteredRows(rows);
+  }, [rows]);
 
-  if (loading) {
-    return <div className="text-gray-400">Carregando afiliados...</div>;
-  }
+  // Totais (KPIs) baseados no que está filtrado
+  const totals = useMemo(() => {
+    return filteredRows.reduce((acc, row) => ({
+      registrations: acc.registrations + (Number(row.registrations) || 0),
+      ftds: acc.ftds + (Number(row.ftds) || 0),
+      commission: acc.commission + (Number(row.commission) || 0),
+      net_pnl: acc.net_pnl + (Number(row.net_pnl) || 0)
+    }), { registrations: 0, ftds: 0, commission: 0, net_pnl: 0 });
+  }, [filteredRows]);
 
   return (
-    <div className="space-y-6">
-      {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4">
-        <Kpi title="Afiliados" value={affiliates.length} />
-        <Kpi
-          title="Registros"
-          value={affiliates.reduce((a, b) => a + b.registrations, 0)}
-        />
-        <Kpi
-          title="Comissão Total"
-          value={`$${affiliates
-            .reduce((a, b) => a + b.commission, 0)
-            .toFixed(2)}`}
-        />
+    <div className="space-y-6 animate-fade-in">
+      
+      {/* KPIs Gerais (Topo) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <KpiCard title="Afiliados Listados" value={filteredRows.length} />
+        <KpiCard title="Total Registros" value={totals.registrations} />
+        <KpiCard title="Total FTDs" value={totals.ftds} />
+        <KpiCard title="Total Lucro" value={`USD ${totals.net_pnl.toFixed(2)}`} color="green" />
       </div>
 
-      {/* Ranking */}
-      <div className="bg-zinc-900 rounded-xl p-4">
-        <h2 className="text-lg font-semibold mb-3">🏆 Top 10 Afiliados</h2>
-        {affiliates
-          .sort((a, b) => b.commission - a.commission)
-          .slice(0, 10)
-          .map((a, i) => (
-            <div key={i} className="flex justify-between py-1">
-              <span>#{i + 1} {a.affiliate}</span>
-              <span className="font-semibold">${a.commission.toFixed(2)}</span>
-            </div>
-          ))}
-      </div>
+      {/* Layout Principal: Sidebar + Tabela */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        
+        {/* Barra Lateral de Filtros (Esquerda) */}
+        <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-6">
+          <AffiliateFilters rows={rows} onFilter={setFilteredRows} />
+        </aside>
 
-      {/* Tabela */}
-      <table className="w-full text-sm">
-        <thead className="text-gray-400 border-b border-zinc-800">
-          <tr>
-            <th className="text-left py-2">Afiliado</th>
-            <th>Registros</th>
-            <th>FTDs</th>
-            <th>Comissão</th>
-            <th>Net P&L</th>
-          </tr>
-        </thead>
-        <tbody>
-          {affiliates.map((a, i) => (
-            <tr key={i} className="border-b border-zinc-800">
-              <td className="py-2">{a.affiliate}</td>
-              <td className="text-center">{a.registrations}</td>
-              <td className="text-center">{a.ftds}</td>
-              <td className="text-center">${a.commission.toFixed(2)}</td>
-              <td className="text-center">${a.net_pl.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        {/* Tabela (Direita) */}
+        <div className="flex-1 w-full min-w-0">
+          <div className="bg-[#1c1c1c] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-lg">
+            {/* Passamos 'data' para a tabela (verifique se sua tabela usa 'data' ou 'affiliates' como prop) */}
+            <AffiliateTable 
+              data={filteredRows} 
+              onSelect={onSelectAffiliate} 
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Kpi({ title, value }) {
+function KpiCard({ title, value, color }) {
+  const textColor = color === "green" ? "text-emerald-400" : "text-white";
   return (
-    <div className="bg-zinc-900 rounded-xl p-4">
-      <p className="text-gray-400 text-sm">{title}</p>
-      <p className="text-2xl font-bold">{value}</p>
+    <div className="bg-[#1c1c1c] border border-[#2a2a2a] rounded-xl p-5">
+      <p className="text-gray-400 text-xs uppercase font-semibold mb-1">{title}</p>
+      <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
     </div>
   );
 }

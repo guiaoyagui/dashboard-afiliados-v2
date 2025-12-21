@@ -1,18 +1,11 @@
-export function formatCurrency(value = 0) {
-  return value.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2
-  });
-}
+// frontend/src/utils/format.js
+export const formatCurrency = (value) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value || 0);
+};
 
-export function formatDateLabel(dateVal) {
-  try {
-    const d = new Date(dateVal);
-    if (!isNaN(d)) {
-      return d.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit'
-      });
-    }
-  } catch {}
-  return String(dateVal);
-}
+export const formatNumber = (value) => {
+  return new Intl.NumberFormat('pt-BR').format(value || 0);
+};
